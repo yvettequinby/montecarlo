@@ -61,9 +61,12 @@ public class MonteCarloServiceImplTest {
 			log.error("Error in flux publisher! ", error);
 			latch.countDown();
 		}, () -> {
-			System.out.println("Flux publisher complete!");
+			log.debug("Flux publisher complete!");
 			latch.countDown();
 		});
+		log.debug("Async in action!");
+		Thread.sleep(3000);
+		log.debug("Async in action!");
 		latch.await();
 		assertNotNull("Flux capacitors overloaded!");
 	}
