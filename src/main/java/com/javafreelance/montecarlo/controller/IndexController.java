@@ -29,10 +29,10 @@ public class IndexController {
 	public Flux<SimulatedMarketDataDTO> quotesStream() {
 		
 		WebClient client = WebClient.create("http://localhost:8080");
-	    Flux<SimulatedMarketDataDTO> flux = client.get()
+		Flux<SimulatedMarketDataDTO> flux = client.get()
 	    		.uri("/streamMarketData")
 				.accept(APPLICATION_STREAM_JSON)
-	            .retrieve()
+				.retrieve()
 	            .bodyToFlux(SimulatedMarketDataDTO.class);
 	    return flux;
 	}

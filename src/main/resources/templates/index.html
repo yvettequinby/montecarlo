@@ -79,7 +79,11 @@
 			
 		    var marketDataEventSource = new EventSource("/marketdata/feed");
 		    marketDataEventSource.onmessage = function (e) {
-		        updateMarketData(JSON.parse(e.data));
+		    	var marketData = JSON.parse(e.data);
+		        updateMarketData(marketData);
+		        if(marketData.endOfSeries) {
+		        	e.target.close();
+		        }
 		    };
 		    
 		</script>	

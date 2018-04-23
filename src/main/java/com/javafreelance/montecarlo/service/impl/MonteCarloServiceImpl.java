@@ -43,7 +43,7 @@ public class MonteCarloServiceImpl implements MonteCarloService {
 			final MonteCarloUtil mcu) {
 		return () -> {
 			SimulatedMarketDataDTO p = initial;
-			log.error("Monte Carlo Start!");
+			log.debug("Monte Carlo Start!");
 			while (p != null && !p.isEndOfSeries()) {
 				p = mcu.spinWheel(config, p);
 				try {
@@ -55,7 +55,7 @@ public class MonteCarloServiceImpl implements MonteCarloService {
 				emitter.next(p);
 			}
 			emitter.complete();
-			log.error("Monte Carlo Complete!");
+			log.debug("Monte Carlo Complete!");
 		};
 	}
 
