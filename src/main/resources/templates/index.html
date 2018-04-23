@@ -34,26 +34,26 @@
 			                <div class="table-responsive">
 		                        <table class="table table-hover ">
 		                            <thead class="thead-inverse">
-		                            <tr>
-		                                <th>Time</th>
-		                                <th>Bid Qty</th>
-		                                <th>Bid</th>
-		                                <th>Ask</th>
-		                                <th>Ask Qty</th>
-		                                <td>Last</td>
-		                                <td>Last Qty</td>
-		                                <td>CLOSED</td>
-		                            </tr>
+			                            <tr>
+			                                <th style="width:10%; text-align:center;">Time</th>
+			                                <th style="width:15%; text-align:center;">Bid Qty</th>
+			                                <th style="width:10%; text-align:center;">Bid</th>
+			                                <th style="width:10%; text-align:center;">Ask</th>
+			                                <th style="width:15%; text-align:center;">Ask Qty</th>
+			                                <th style="width:10%; text-align:center;">Last</th>
+			                                <th style="width:15%; text-align:center;">Last Qty</th>
+			                                <th style="width:15%; text-align:center;">Closed</th>
+			                            </tr>
 		                            </thead>
 		                            <tr>
-		                                <td id="timeMilliSecs">x</td>
-		                                <td id="bidSize">x</td>
-		                                <td id="bid">x</td>
-		                                <td id="ask">x</td>
-		                                <td id="askSize">x</td>
-		                                <td id="last">x</td>
-		                                <td id="lastSize">x</td>
-		                                <td id="endOfSeries">x</td>
+		                                <td style="text-align:center;" id="timeMilliSecs">x</td>
+		                                <td style="text-align:center;" id="bidSize">x</td>
+		                                <td style="text-align:center;" id="bid">x</td>
+		                                <td style="text-align:center;" id="ask">x</td>
+		                                <td style="text-align:center;" id="askSize">x</td>
+		                                <td style="text-align:center;" id="last">x</td>
+		                                <td style="text-align:center;" id="lastSize">x</td>
+		                                <td style="text-align:center;" id="endOfSeries">x</td>
 		                            </tr>
 		                        </table>
 		                    </div>
@@ -72,7 +72,8 @@
 		    	$("#ask").html(marketData.ask);
 		    	$("#askSize").html(marketData.askSize);
 		    	$("#last").html(marketData.last);
-		    	$("#endOfSeries").html(marketData.endOfSeries);
+		    	$("#lastSize").html(marketData.lastSize);
+		    	$("#endOfSeries").html("" + marketData.endOfSeries);
 		        
 		    };
 			

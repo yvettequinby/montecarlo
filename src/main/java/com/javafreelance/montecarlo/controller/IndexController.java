@@ -27,12 +27,13 @@ public class IndexController {
 	@GetMapping(path = "/marketdata/feed", produces = TEXT_EVENT_STREAM_VALUE)
 	@ResponseBody
 	public Flux<SimulatedMarketDataDTO> quotesStream() {
-		return WebClient.create("http://localhost:8080")
-				.get()
-				.uri("/streamMarketData")
+		
+		WebClient client = WebClient.create("http://localhost:8080");
+	    Flux<SimulatedMarketDataDTO> flux = client.get()
+	    		.uri("/streamMarketData")
 				.accept(APPLICATION_STREAM_JSON)
-				.retrieve()
-				.bodyToFlux(SimulatedMarketDataDTO.class)
-				.share();
+	            .retrieve()
+	            .bodyToFlux(SimulatedMarketDataDTO.class);
+	    return flux;
 	}
 }
