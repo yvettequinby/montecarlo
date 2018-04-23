@@ -81,7 +81,7 @@
 		    marketDataEventSource.onmessage = function (e) {
 		    	var marketData = JSON.parse(e.data);
 		        updateMarketData(marketData);
-		        if(marketData.endOfSeries) {
+		        if(marketData.endOfSeries) { // Probably we don't want this in the long term, but it's good for now
 		        	e.target.close();
 		        }
 		    };
