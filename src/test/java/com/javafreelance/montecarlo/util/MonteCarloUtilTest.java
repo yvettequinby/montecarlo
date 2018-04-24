@@ -2,17 +2,20 @@ package com.javafreelance.montecarlo.util;
 
 import static org.junit.Assert.*;
 
+import java.text.DecimalFormat;
 import java.util.Random;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.junit.Test;
 
-import com.javafreelance.montecarlo.dto.ConfigurationDTO;
+import com.javafreelance.montecarlo.dto.SimulationConfigurationDTO;
 import com.javafreelance.montecarlo.dto.SimulatedMarketDataDTO;
 
 public class MonteCarloUtilTest {
 
-	private ConfigurationDTO makeConfig() {
+	private SimulationConfigurationDTO makeConfig() {
+		String id = "000001";
+		String name = "DFLT";
 		Double initialPrice = 69.00d;
 		Double tickSize = 0.02d;
 		Integer tickScale = 2;
@@ -24,12 +27,13 @@ public class MonteCarloUtilTest {
 		Double timeStepVolatility = 0.05;
 		Double spreadVolatility = 0.2;
 		Long maxSeriesTimeMilliSecs = 1000L * 30; // 30 seconds
-		ConfigurationDTO config = new ConfigurationDTO(initialPrice, tickSize, tickScale, avgTimeStepMilliSecs, volatility, riskFreeReturn,
+		SimulationConfigurationDTO config = new SimulationConfigurationDTO(id, name, initialPrice, tickSize, tickScale, avgTimeStepMilliSecs, volatility, riskFreeReturn,
 				avgBidAskLastSize, sizeVolatility, timeStepVolatility, spreadVolatility, maxSeriesTimeMilliSecs);
 		return config;
 	}
 
-	private SimulatedMarketDataDTO makeInitialSimulatedMarketDataDTO(ConfigurationDTO config) {
+	private SimulatedMarketDataDTO makeInitialSimulatedMarketDataDTO(SimulationConfigurationDTO config) {
+		DecimalFormat df = MonteCarloUtil.buildTickDecimalFormat(config.getTickScale());
 		Long timeStepMilliSecs = config.getAvgTimeStepMilliSecs();
 		Long timeMilliSecs = config.getAvgTimeStepMilliSecs();
 		Double simulatedPrice = config.getInitialPrice();
@@ -40,13 +44,13 @@ public class MonteCarloUtilTest {
 		Long askSize = config.getAvgBidAskLastSize();
 		Long lastSize = config.getAvgBidAskLastSize();
 		SimulatedMarketDataDTO initial = new SimulatedMarketDataDTO(timeStepMilliSecs, timeMilliSecs, simulatedPrice, bid, ask, last, bidSize,
-				askSize, lastSize, false);
+				askSize, lastSize, df.format(bid), df.format(ask), df.format(last), false);
 		return initial;
 	}
 
 	@Test
 	public void testWienerProcess() {
-		ConfigurationDTO config = makeConfig();
+		SimulationConfigurationDTO config = makeConfig();
 		Long seed = 1000L;
 		MonteCarloUtil monteCarlo = new MonteCarloUtil(seed);
 		Random rand = new Random(seed);
@@ -68,13 +72,14 @@ public class MonteCarloUtilTest {
 
 	@Test
 	public void testSpinWheel() {
-		ConfigurationDTO config = makeConfig();
+		SimulationConfigurationDTO config = makeConfig();
 		SimulatedMarketDataDTO initial = makeInitialSimulatedMarketDataDTO(config);
 		Long seed = 1000L;
 		MonteCarloUtil monteCarlo = new MonteCarloUtil(seed);
 		Random rand = new Random(seed);
 		System.out.println(rand.nextDouble()); // use this in the excel model with other inputs to generate expected values for this test
-		SimulatedMarketDataDTO result = monteCarlo.spinWheel(config, initial);
+		DecimalFormat df = MonteCarloUtil.buildTickDecimalFormat(config.getTickScale());
+		SimulatedMarketDataDTO result = monteCarlo.spinWheel(config, initial, df);
 		Double priceResult = MonteCarloUtil.round(result.getSimulatedPrice(), 8);
 		Double expectedPriceResult = 69.00206916d; // from Excel model
 		assertEquals(expectedPriceResult, priceResult); // from Excel model
@@ -88,7 +93,7 @@ public class MonteCarloUtilTest {
 
 	@Test(expected = RuntimeException.class)
 	public void testSpinWheelsLongTime() {
-		ConfigurationDTO config = makeConfig();
+		SimulationConfigurationDTO config = makeConfig();
 		SimulatedMarketDataDTO initial = makeInitialSimulatedMarketDataDTO(config);
 		MonteCarloUtil monteCarlo = new MonteCarloUtil(null);
 		SimulatedMarketDataDTO result = monteCarlo.spinWheels(50, config, initial);
@@ -97,7 +102,7 @@ public class MonteCarloUtilTest {
 
 	@Test
 	public void testSpinWheelsShortTime() {
-		ConfigurationDTO config = makeConfig();
+		SimulationConfigurationDTO config = makeConfig();
 		SimulatedMarketDataDTO initial = makeInitialSimulatedMarketDataDTO(config);
 		MonteCarloUtil monteCarlo = new MonteCarloUtil(null);
 		SimulatedMarketDataDTO result = monteCarlo.spinWheels(10, config, initial);

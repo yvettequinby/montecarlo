@@ -18,6 +18,21 @@
 	</head>
 	<body>
 	
+		<nav class="navbar navbar-default" th:replace="fragments/menu :: menu">
+		    <div class="container-fluid">
+		        <div class="navbar-header">
+		            <a class="navbar-brand" href="/">monte carlo simulation application</a>
+		        </div>
+		        <div id="navbar" class="navbar-collapse collapse">
+		            <ul class="nav navbar-nav">
+		                <li class="active"><a href="/">Home</a></li>
+		            </ul>
+		        </div>
+		    </div>
+		</nav>
+		
+		
+	
 		<div class="container-fluid" style="margin-top: 20px">
 		    <div class="row">
 		        <div class="col-md-6 col-md-offset-3">
@@ -26,34 +41,48 @@
 		                <div class="panel-heading">
 		                    <div class="row">
                                <div class="col-md-10 ">
-                                   <h1 class="panel-title">Price Simulation</h1>
+                                   <h1 class="panel-title">Simulation Configuration List</h1>
                                </div>
                            </div>
 		                </div>
 		                <div class="panel-body">
-			                <div class="table-responsive">
+			                <div class="table-responsive" th:if="${#lists.isEmpty(configs)}">
+			                	There are no configs in the database! 
+			                	Please <a href="/config/new">create</a> one.
+			                </div>
+		                    <div class="table-responsive" th:if="${not #lists.isEmpty(configs)}">
 		                        <table class="table table-hover ">
 		                            <thead class="thead-inverse">
 			                            <tr>
-			                                <th style="width:10%; text-align:center;">Time</th>
-			                                <th style="width:15%; text-align:center;">Bid Qty</th>
-			                                <th style="width:10%; text-align:center;">Bid</th>
-			                                <th style="width:10%; text-align:center;">Ask</th>
-			                                <th style="width:15%; text-align:center;">Ask Qty</th>
-			                                <th style="width:10%; text-align:center;">Last</th>
-			                                <th style="width:15%; text-align:center;">Last Qty</th>
-			                                <th style="width:15%; text-align:center;">Closed</th>
+			                                <th text-align:left;">ID</th>
+			                                <th text-align:left;">Name</th>
+			                                <th text-align:center;">Initial Price</th>
+			                                <th text-align:center;">Tick Size</th>
+			                                <th text-align:center;">Volatility</th>
+			                                <th text-align:center;">Max Duration</th>
+			                                <th text-align:center;">&nbsp;</th>
+			                                <th text-align:center;">&nbsp;</th>
 			                            </tr>
 		                            </thead>
-		                            <tr>
-		                                <td style="text-align:center;" id="timeMilliSecs">x</td>
-		                                <td style="text-align:center;" id="bidSize">x</td>
-		                                <td style="text-align:center;" id="bid">x</td>
-		                                <td style="text-align:center;" id="ask">x</td>
-		                                <td style="text-align:center;" id="askSize">x</td>
-		                                <td style="text-align:center;" id="last">x</td>
-		                                <td style="text-align:center;" id="lastSize">x</td>
-		                                <td style="text-align:center;" id="endOfSeries">x</td>
+		                            <tr th:remove="all">
+		                                <td style="text-align:left;">x</td>
+		                                <td style="text-align:left;">x</td>
+		                                <td style="text-align:center;">x</td>
+		                                <td style="text-align:center;">x</td>
+		                                <td style="text-align:center;">x</td>
+		                                <td style="text-align:center;">x</td>
+		                                <td style="text-align:center;">x</td>
+		                                <td style="text-align:center;">x</td>
+		                            </tr>
+		                            <tr th:each="config : ${configs}">
+		                                <td style="text-align:left;" th:text="${config.id}">x</td>
+		                                <td style="text-align:left;" th:text="${config.name}">x</td>
+		                                <td style="text-align:center;" th:text="${config.initialPrice}">x</td>
+		                                <td style="text-align:center;" th:text="${config.tickSize}">x</td>
+		                                <td style="text-align:center;" th:text="${config.volatility}">x</td>
+		                                <td style="text-align:center;" th:text="${config.maxSeriesTimeMilliSecs}">x</td>
+		                                <td style="text-align:center;"><a href="#" th:href="@{'/configuration/' + ${config.id} + '/view'}">Details</a></td>
+		                                <td style="text-align:center;"><a href="#" th:href="@{'/simulation/' + ${config.id} + '/view'}">Run Sim</a></td>
 		                            </tr>
 		                        </table>
 		                    </div>
@@ -63,30 +92,7 @@
 		    </div>
 		</div>
 		
-		<script type="text/javascript">
-		
-			var updateMarketData = function (marketData) {
-		    	$("#timeMilliSecs").html(marketData.timeMilliSecs);
-		    	$("#bidSize").html(marketData.bidSize);
-		    	$("#bid").html(marketData.bid);
-		    	$("#ask").html(marketData.ask);
-		    	$("#askSize").html(marketData.askSize);
-		    	$("#last").html(marketData.last);
-		    	$("#lastSize").html(marketData.lastSize);
-		    	$("#endOfSeries").html("" + marketData.endOfSeries);
-		        
-		    };
 			
-		    var marketDataEventSource = new EventSource("/marketdata/feed");
-		    marketDataEventSource.onmessage = function (e) {
-		    	var marketData = JSON.parse(e.data);
-		        updateMarketData(marketData);
-		        if(marketData.endOfSeries) { // Probably we don't want this in the long term, but it's good for now
-		        	e.target.close();
-		        }
-		    };
-		    
-		</script>	
 	
 	</body>
 </html>

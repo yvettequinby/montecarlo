@@ -6,6 +6,7 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.server.RequestPredicate;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -17,6 +18,7 @@ public class WebConfig {
 
 	@Bean
 	public RouterFunction<ServerResponse> route(MonteCarloHandler monteCarloHandler) {
-		return RouterFunctions.route(GET("/streamMarketData").and(accept(APPLICATION_STREAM_JSON)), monteCarloHandler::streamMarketData);
+		RequestPredicate rp = GET("/publishing/sim/{configId}").and(accept(APPLICATION_STREAM_JSON));
+		return RouterFunctions.route(rp, monteCarloHandler::streamMarketData);
 	}
 }

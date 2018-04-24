@@ -5,8 +5,10 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ConfigurationDTO {
+public class SimulationConfigurationDTO {
 
+	private final String id;
+	private final String name;
 	private final Double initialPrice;
 	private final Double tickSize;
 	private final Integer tickScale; // for help managing stupid doubles

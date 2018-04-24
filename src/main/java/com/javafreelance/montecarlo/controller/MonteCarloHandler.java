@@ -26,7 +26,8 @@ public class MonteCarloHandler {
 	}
 
 	public Mono<ServerResponse> streamMarketData(ServerRequest request) {
-		final Flux<SimulatedMarketDataDTO> mdFlux = monteCarloService.retrieveDefaultMonteCarloPublisher();
+		String configId = request.pathVariable("configId");
+		final Flux<SimulatedMarketDataDTO> mdFlux = monteCarloService.retrieveMonteCarloPublisher(configId);
 		return ok().contentType(APPLICATION_STREAM_JSON).body(mdFlux, SimulatedMarketDataDTO.class);
 	}
 }

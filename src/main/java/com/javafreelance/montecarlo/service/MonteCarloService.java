@@ -1,13 +1,16 @@
 package com.javafreelance.montecarlo.service;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import com.javafreelance.montecarlo.dto.ConfigurationDTO;
 import com.javafreelance.montecarlo.dto.SimulatedMarketDataDTO;
+import com.javafreelance.montecarlo.model.SimulationConfigurationModel;
 
 public interface MonteCarloService {
 
-	Flux<SimulatedMarketDataDTO> retrieveMonteCarloPublisher(ConfigurationDTO config, SimulatedMarketDataDTO initial);
+	Flux<SimulatedMarketDataDTO> retrieveMonteCarloPublisher(String configId);
 
-	Flux<SimulatedMarketDataDTO> retrieveDefaultMonteCarloPublisher();
+	Flux<SimulationConfigurationModel> listSimulationConfigurations();
+
+	Mono<SimulationConfigurationModel> getSimulationConfiguration(String id);
 }

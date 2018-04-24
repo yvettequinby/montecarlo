@@ -1,10 +1,12 @@
 package com.javafreelance.montecarlo.dto;
 
+import lombok.Getter;
 import lombok.ToString;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@Getter
 @ToString
 public class SimulatedMarketDataDTO {
 
@@ -17,6 +19,9 @@ public class SimulatedMarketDataDTO {
 	private final Long bidSize;
 	private final Long askSize;
 	private final Long lastSize;
+	private final String bidString;
+	private final String askString;
+	private final String lastString;
 	private final boolean endOfSeries;
 
 	@JsonCreator
@@ -29,6 +34,9 @@ public class SimulatedMarketDataDTO {
 			@JsonProperty("bidSize")Long bidSize, 
 			@JsonProperty("askSize")Long askSize, 
 			@JsonProperty("lastSize")Long lastSize, 
+			@JsonProperty("bidString")String bidString, 
+			@JsonProperty("askString")String askString, 
+			@JsonProperty("lastString")String lastString, 
 			@JsonProperty("endOfSeries")boolean endOfSeries) {
 		super();
 		this.timeStepMilliSecs = timeStepMilliSecs;
@@ -40,46 +48,12 @@ public class SimulatedMarketDataDTO {
 		this.bidSize = bidSize;
 		this.askSize = askSize;
 		this.lastSize = lastSize;
+		this.bidString = bidString;
+		this.askString = askString;
+		this.lastString = lastString;
 		this.endOfSeries = endOfSeries;
 	}
+	
+	
 
-	public Long getTimeStepMilliSecs() {
-		return timeStepMilliSecs;
-	}
-
-	public Long getTimeMilliSecs() {
-		return timeMilliSecs;
-	}
-
-	public Double getSimulatedPrice() {
-		return simulatedPrice;
-	}
-
-	public Double getBid() {
-		return bid;
-	}
-
-	public Double getAsk() {
-		return ask;
-	}
-
-	public Double getLast() {
-		return last;
-	}
-
-	public Long getBidSize() {
-		return bidSize;
-	}
-
-	public Long getAskSize() {
-		return askSize;
-	}
-
-	public Long getLastSize() {
-		return lastSize;
-	}
-
-	public boolean isEndOfSeries() {
-		return endOfSeries;
-	}
 }

@@ -2,6 +2,7 @@ package com.javafreelance.montecarlo.util;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.Random;
 
 import lombok.AllArgsConstructor;
@@ -9,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 
-import com.javafreelance.montecarlo.dto.ConfigurationDTO;
+import com.javafreelance.montecarlo.dto.SimulationConfigurationDTO;
 import com.javafreelance.montecarlo.dto.SimulatedMarketDataDTO;
 
 @AllArgsConstructor
@@ -19,19 +20,20 @@ public class MonteCarloUtil {
 	private final Long seed;
 	public static final Double MILLISECS_TO_YEARS = new Double("0.0000000000317097919837646");
 
-	public SimulatedMarketDataDTO spinWheels(int spins, ConfigurationDTO config, SimulatedMarketDataDTO initial) {
+	public SimulatedMarketDataDTO spinWheels(int spins, SimulationConfigurationDTO config, SimulatedMarketDataDTO initial) {
 		SimulatedMarketDataDTO result = initial;
+		DecimalFormat df = buildTickDecimalFormat(config.getTickScale());
 		for (int i = 0; i < spins; i++) {
 			if (result.isEndOfSeries()) {
 				throw new RuntimeException("End of series reached before spins complete!");
 			}
-			result = spinWheel(config, result);
+			result = spinWheel(config, result, df);
 			log.debug(result.toString());
 		}
 		return result;
 	}
 
-	public SimulatedMarketDataDTO spinWheel(ConfigurationDTO c, SimulatedMarketDataDTO p) {
+	public SimulatedMarketDataDTO spinWheel(SimulationConfigurationDTO c, SimulatedMarketDataDTO p, DecimalFormat df) {
 		// Prepare a standard normal distribution
 		NormalDistribution nd = new NormalDistribution(0d, 1d);
 		// Calc a simulated time step
@@ -59,8 +61,20 @@ public class MonteCarloUtil {
 		}
 		// Put it all together
 		SimulatedMarketDataDTO smd = new SimulatedMarketDataDTO(simTimeStep, time, simPrice, bid, ask, last, simBidSize, simAskSize, simLastSize,
-				lastInSeries);
+				df.format(bid), df.format(ask), df.format(last), lastInSeries);
 		return smd;
+	}
+	
+	public static DecimalFormat buildTickDecimalFormat(Integer scale) {
+		DecimalFormat df = new DecimalFormat();
+		String pattern = "0.00";
+		if(scale>2) {
+			for(int i=2; i<=scale; i++) {
+				pattern = pattern + "0";
+			}
+		}
+		df.applyPattern(pattern);
+		return df;
 	}
 
 	public Double wienerProcess(NormalDistribution nd, double r, double sigma, double t, double s) {

@@ -1,17 +1,23 @@
 package com.javafreelance.montecarlo.service.impl;
 
+import java.text.DecimalFormat;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
+import reactor.core.publisher.Mono;
 
-import com.javafreelance.montecarlo.dto.ConfigurationDTO;
 import com.javafreelance.montecarlo.dto.SimulatedMarketDataDTO;
+import com.javafreelance.montecarlo.dto.SimulationConfigurationDTO;
+import com.javafreelance.montecarlo.mapper.SimulationConfigurationMapper;
+import com.javafreelance.montecarlo.model.SimulationConfigurationModel;
+import com.javafreelance.montecarlo.repository.SimulationConfigurationRepository;
 import com.javafreelance.montecarlo.service.MonteCarloService;
 import com.javafreelance.montecarlo.util.MonteCarloUtil;
 
@@ -19,33 +25,55 @@ import com.javafreelance.montecarlo.util.MonteCarloUtil;
 @Slf4j
 public class MonteCarloServiceImpl implements MonteCarloService {
 
-	@Override
-	public Flux<SimulatedMarketDataDTO> retrieveDefaultMonteCarloPublisher() {
-		final ConfigurationDTO config = makeConfig();
-		final SimulatedMarketDataDTO initial = makeInitialSimulatedMarketDataDTO(config);
-		return retrieveMonteCarloPublisher(config, initial);
+	private final SimulationConfigurationRepository simulationConfigurationRepository;
+	private final SimulationConfigurationMapper simulationConfigurationMapper;
+
+	@Autowired
+	public MonteCarloServiceImpl(SimulationConfigurationRepository simulationConfigurationRepository,
+			SimulationConfigurationMapper simulationConfigurationMapper) {
+		this.simulationConfigurationRepository = simulationConfigurationRepository;
+		this.simulationConfigurationMapper = simulationConfigurationMapper;
 	}
 
 	@Override
-	public Flux<SimulatedMarketDataDTO> retrieveMonteCarloPublisher(final ConfigurationDTO config, final SimulatedMarketDataDTO initial) {
+	public Flux<SimulationConfigurationModel> listSimulationConfigurations() {
+		return simulationConfigurationRepository.findAll().map(domain -> simulationConfigurationMapper.toModel(domain));
+	}
+
+	@Override
+	public Mono<SimulationConfigurationModel> getSimulationConfiguration(String id) {
+		return simulationConfigurationRepository.findById(id).map(domain -> simulationConfigurationMapper.toModel(domain));
+	}
+
+	@Override
+	public Flux<SimulatedMarketDataDTO> retrieveMonteCarloPublisher(String configId) {
+		Mono<SimulationConfigurationDTO> config = simulationConfigurationRepository.findById(configId).map(
+				domain -> simulationConfigurationMapper.toDTO(domain));
+		Mono<SimulatedMarketDataDTO> initial = makeInitialSimulatedMarketDataDTO(config);
+		return retrieveMonteCarloPublisher(config, initial);
+	}
+
+	private Flux<SimulatedMarketDataDTO> retrieveMonteCarloPublisher(Mono<SimulationConfigurationDTO> config, Mono<SimulatedMarketDataDTO> initial) {
 		final MonteCarloUtil mcu = new MonteCarloUtil(null);
 		final ExecutorService producerExecutor = Executors.newSingleThreadExecutor();
 		Flux<SimulatedMarketDataDTO> flux = Flux.create(fluxSink -> executeMonteGoGo(producerExecutor, fluxSink, config, initial, mcu));
 		return flux;
 	}
 
-	private void executeMonteGoGo(ExecutorService producerExecutor, final FluxSink<SimulatedMarketDataDTO> emitter, final ConfigurationDTO config,
-			final SimulatedMarketDataDTO initial, final MonteCarloUtil mcu) {
+	private void executeMonteGoGo(ExecutorService producerExecutor, final FluxSink<SimulatedMarketDataDTO> emitter,
+			final Mono<SimulationConfigurationDTO> config, final Mono<SimulatedMarketDataDTO> initial, final MonteCarloUtil mcu) {
 		producerExecutor.execute(monteGoGo(emitter, config, initial, mcu));
 	}
 
-	public Runnable monteGoGo(final FluxSink<SimulatedMarketDataDTO> emitter, final ConfigurationDTO config, final SimulatedMarketDataDTO initial,
-			final MonteCarloUtil mcu) {
+	public Runnable monteGoGo(final FluxSink<SimulatedMarketDataDTO> emitter, final Mono<SimulationConfigurationDTO> config,
+			final Mono<SimulatedMarketDataDTO> initial, final MonteCarloUtil mcu) {
 		return () -> {
-			SimulatedMarketDataDTO p = initial;
+			SimulatedMarketDataDTO p = initial.block();
+			SimulationConfigurationDTO c = config.block();
+			DecimalFormat df = MonteCarloUtil.buildTickDecimalFormat(c.getTickScale());
 			log.debug("Monte Carlo Start!");
 			while (p != null && !p.isEndOfSeries()) {
-				p = mcu.spinWheel(config, p);
+				p = mcu.spinWheel(c, p, df);
 				try {
 					Thread.sleep(p.getTimeStepMilliSecs());
 				} catch (InterruptedException e) {
@@ -59,35 +87,21 @@ public class MonteCarloServiceImpl implements MonteCarloService {
 		};
 	}
 
-	private ConfigurationDTO makeConfig() {
-		Double initialPrice = 69.00d;
-		Double tickSize = 0.01d;
-		Integer tickScale = 2;
-		Long avgTimeStepMilliSecs = 200L;
-		Double volatility = 0.35d;
-		Double riskFreeReturn = 0.01d;
-		Long avgBidAskLastSize = 2500L;
-		Double sizeVolatility = 0.20d;
-		Double timeStepVolatility = 0.15;
-		Double spreadVolatility = 0.2;
-		Long maxSeriesTimeMilliSecs = 1000L * 30; // 30 seconds
-		ConfigurationDTO config = new ConfigurationDTO(initialPrice, tickSize, tickScale, avgTimeStepMilliSecs, volatility, riskFreeReturn,
-				avgBidAskLastSize, sizeVolatility, timeStepVolatility, spreadVolatility, maxSeriesTimeMilliSecs);
-		return config;
-	}
-
-	private SimulatedMarketDataDTO makeInitialSimulatedMarketDataDTO(ConfigurationDTO config) {
-		Long timeStepMilliSecs = config.getAvgTimeStepMilliSecs();
-		Long timeMilliSecs = config.getAvgTimeStepMilliSecs();
-		Double simulatedPrice = config.getInitialPrice();
-		Double bid = config.getInitialPrice() - config.getTickSize();
-		Double ask = config.getInitialPrice();
-		Double last = config.getInitialPrice();
-		Long bidSize = config.getAvgBidAskLastSize();
-		Long askSize = config.getAvgBidAskLastSize();
-		Long lastSize = config.getAvgBidAskLastSize();
-		SimulatedMarketDataDTO initial = new SimulatedMarketDataDTO(timeStepMilliSecs, timeMilliSecs, simulatedPrice, bid, ask, last, bidSize,
-				askSize, lastSize, false);
-		return initial;
+	private Mono<SimulatedMarketDataDTO> makeInitialSimulatedMarketDataDTO(Mono<SimulationConfigurationDTO> configMono) {
+		return configMono.map(config -> {
+			Long timeStepMilliSecs = config.getAvgTimeStepMilliSecs();
+			Long timeMilliSecs = config.getAvgTimeStepMilliSecs();
+			Double simulatedPrice = config.getInitialPrice();
+			Double bid = config.getInitialPrice() - config.getTickSize();
+			Double ask = config.getInitialPrice();
+			Double last = config.getInitialPrice();
+			Long bidSize = config.getAvgBidAskLastSize();
+			Long askSize = config.getAvgBidAskLastSize();
+			Long lastSize = config.getAvgBidAskLastSize();
+			DecimalFormat df = MonteCarloUtil.buildTickDecimalFormat(config.getTickScale());
+			SimulatedMarketDataDTO initial = new SimulatedMarketDataDTO(timeStepMilliSecs, timeMilliSecs, simulatedPrice, bid, ask, last, bidSize,
+					askSize, lastSize, df.format(bid), df.format(ask), df.format(last), false);
+			return initial;
+		});
 	}
 }
