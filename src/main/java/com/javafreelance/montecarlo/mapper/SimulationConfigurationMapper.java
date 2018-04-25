@@ -54,4 +54,30 @@ public class SimulationConfigurationMapper {
 		}
 		return dto;
 	}
+	
+	@Synchronized
+	public SimulationConfiguration toDomain(SimulationConfigurationModel model) {
+		SimulationConfiguration domain = null;
+		if (model != null) {
+			domain = new SimulationConfiguration();
+			domain.setAvgBidAskLastSize(new Long(model.getAvgBidAskLastSize()));
+			domain.setAvgTimeStepMilliSecs(new Long(model.getAvgTimeStepMilliSecs()));
+			String modelId = model.getId();
+			if(modelId!=null && modelId.trim().length()==0) {
+				modelId = null; // empty strings...
+			}
+			domain.setId(modelId);
+			domain.setInitialPrice(new Double(model.getInitialPrice()));
+			domain.setMaxSeriesTimeMilliSecs(new Long(model.getMaxSeriesTimeMilliSecs()));
+			domain.setName(model.getName());
+			domain.setRiskFreeReturn(new Double(model.getRiskFreeReturn()));
+			domain.setSizeVolatility(new Double(model.getSizeVolatility()));
+			domain.setSpreadVolatility(new Double(model.getSpreadVolatility()));
+			domain.setTickScale(new Integer(model.getTickScale()));
+			domain.setTickSize(new Double(model.getTickSize()));
+			domain.setTimeStepVolatility(new Double(model.getTimeStepVolatility()));
+			domain.setVolatility(new Double(model.getVolatility()));
+		}
+		return domain;
+	}
 }

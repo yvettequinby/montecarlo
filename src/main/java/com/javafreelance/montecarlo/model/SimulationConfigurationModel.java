@@ -30,7 +30,7 @@ public class SimulationConfigurationModel {
 	@Digits(integer = 1, fraction = 0)
 	private String tickScale;
 	@NotBlank
-	@Size(min = 1, max = 6)
+	@Size(min = 3, max = 6)
 	@Digits(integer = 6, fraction = 0)
 	private String avgTimeStepMilliSecs;
 	@NotBlank
@@ -58,8 +58,8 @@ public class SimulationConfigurationModel {
 	@Digits(integer = 1, fraction = 3)
 	private String spreadVolatility;
 	@NotBlank
-	@Size(min = 1, max = 10)
-	@Digits(integer = 10, fraction = 0)
+	@Size(min = 1, max = 12)
+	@Digits(integer = 12, fraction = 0)
 	private String maxSeriesTimeMilliSecs;
 
 	/*@AssertTrue

@@ -13,6 +13,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
+import com.javafreelance.montecarlo.domain.SimulationConfiguration;
 import com.javafreelance.montecarlo.dto.SimulatedMarketDataDTO;
 import com.javafreelance.montecarlo.dto.SimulationConfigurationDTO;
 import com.javafreelance.montecarlo.mapper.SimulationConfigurationMapper;
@@ -43,6 +44,18 @@ public class MonteCarloServiceImpl implements MonteCarloService {
 	@Override
 	public Mono<SimulationConfigurationModel> getSimulationConfiguration(String id) {
 		return simulationConfigurationRepository.findById(id).map(domain -> simulationConfigurationMapper.toModel(domain));
+	}
+	
+	@Override
+	public Mono<Void> deleteSimulationConfiguration(String id) {
+		return simulationConfigurationRepository.deleteById(id);
+	}
+	
+	@Override
+	public Mono<SimulationConfigurationModel> saveSimulationConfiguration(SimulationConfigurationModel model) {
+		SimulationConfiguration saveMe = simulationConfigurationMapper.toDomain(model);
+		Mono<SimulationConfiguration> mono = simulationConfigurationRepository.save(saveMe);
+		return mono.map(domain -> simulationConfigurationMapper.toModel(domain));
 	}
 
 	@Override

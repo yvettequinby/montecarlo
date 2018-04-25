@@ -1,4 +1,4 @@
-package com.javafreelance.montecarlo;
+package com.javafreelance.montecarlo.bootstrap;
 
 import lombok.extern.slf4j.Slf4j;
 

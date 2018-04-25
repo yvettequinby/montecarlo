@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Java Freelance Developer - Monte Carlo App</title>
+		<!-- Latest compiled and minified CSS -->
+	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+	          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"
+	          th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}">
+	
+	    <script src="/webjars/jquery/1.11.1/jquery.min.js"></script>
+	
+	    <!-- Latest compiled and minified JavaScript -->
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+	            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+	            crossorigin="anonymous" th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+	</head>
+	<body>
+	
+		<nav class="navbar navbar-default" th:replace="fragments/menu :: menu">
+		    <div class="container-fluid">
+		        <div class="navbar-header">
+		            <a class="navbar-brand" href="/">monte carlo simulation application</a>
+		        </div>
+		        <div id="navbar" class="navbar-collapse collapse">
+		            <ul class="nav navbar-nav">
+		                <li class="active"><a href="/">Home</a></li>
+		            </ul>
+		        </div>
+		    </div>
+		</nav>
+		
+		
+	
+		<div class="container-fluid" style="margin-top: 20px">
+		    <div class="row">
+		        <div class="col-md-6 col-md-offset-3">
+		        	<form th:object="${config}" th:action="@{'/configuration/save'} "  method="post">
+				        
+			            <div class="panel panel-primary">
+							<div class="panel-heading">
+			                    <div class="row">
+	                               <div class="col-md-10 ">
+	                                   <h1 class="panel-title">Simulation Configuration</h1>
+	                               </div>
+	                           </div>
+			                </div>
+			                <div class="panel-body">
+			                	<div th:if="${msg!=null}" class="alert alert-info">
+				                    <p th:text="${msg}">Info Message</p>
+				                </div>
+			                	<div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+				                    <p>Please Correct Errors Below</p>
+				                </div>
+				                <input type="hidden" th:field="*{id}"/>
+				                <div class="row">
+	                                 <div class="col-md-10 form-group" th:class="${#fields.hasErrors('name')} ? 'col-md-10 form-group has-error' : 'col-md-10 form-group'">
+	                                    <label>Name:</label>
+	                                    <input type="text" class="form-control" maxlength="7" th:field="*{name}" th:errorclass="has-error"/>
+	                                    <span class="help-block" th:if="${#fields.hasErrors('name')}">
+	                                        <ul>
+	                                            <li th:each="err : ${#fields.errors('name')}" th:text="${err}"/>
+	                                        </ul>
+	                                    </span>
+	                                </div>
+	                            </div>
+	                            <div class="row">
+	                                <div class="col-md-10 form-group" th:class="${#fields.hasErrors('initialPrice')} ? 'col-md-10 form-group has-error' : 'col-md-10 form-group'">
+	                                    <label>Initial Price:</label>
+	                                    <input type="text" class="form-control" maxlength="13" th:field="*{initialPrice}" th:errorclass="has-error"/>
+	                                    <span class="help-block" th:if="${#fields.hasErrors('initialPrice')}">
+	                                        <ul>
+	                                            <li th:each="err : ${#fields.errors('initialPrice')}" th:text="${err}"/>
+	                                        </ul>
+	                                    </span>
+	                                </div>
+	                            </div>
+	                            <div class="row">
+	                                <div class="col-md-10 form-group" th:class="${#fields.hasErrors('tickSize')} ? 'col-md-10 form-group has-error' : 'col-md-10 form-group'">
+	                                    <label>Tick Size:</label>
+	                                    <input type="text" class="form-control" maxlength="5" th:field="*{tickSize}" th:errorclass="has-error"/>
+	                                    <span class="help-block" th:if="${#fields.hasErrors('tickSize')}">
+	                                        <ul>
+	                                            <li th:each="err : ${#fields.errors('tickSize')}" th:text="${err}"/>
+	                                        </ul>
+	                                    </span>
+	                                </div>
+	                            </div>
+	                            <div class="row">
+	                                <div class="col-md-10 form-group" th:class="${#fields.hasErrors('tickScale')} ? 'col-md-10 form-group has-error' : 'col-md-10 form-group'">
+	                                    <label>Tick Scale:</label>
+	                                    <input type="text" class="form-control" maxlength="1" th:field="*{tickScale}" th:errorclass="has-error"/>
+	                                    <span class="help-block" th:if="${#fields.hasErrors('tickScale')}">
+	                                        <ul>
+	                                            <li th:each="err : ${#fields.errors('tickScale')}" th:text="${err}"/>
+	                                        </ul>
+	                                    </span>
+	                                </div>
+	                            </div>
+	                            <div class="row">
+	                                <div class="col-md-10 form-group" th:class="${#fields.hasErrors('volatility')} ? 'col-md-10 form-group has-error' : 'col-md-10 form-group'">
+	                                    <label>Price Volatility:</label>
+	                                    <input type="text" class="form-control" maxlength="4" th:field="*{volatility}" th:errorclass="has-error"/>
+	                                    <span class="help-block" th:if="${#fields.hasErrors('volatility')}">
+	                                        <ul>
+	                                            <li th:each="err : ${#fields.errors('volatility')}" th:text="${err}"/>
+	                                        </ul>
+	                                    </span>
+	                                </div>
+	                            </div>
+	                            <div class="row">
+	                                <div class="col-md-10 form-group" th:class="${#fields.hasErrors('riskFreeReturn')} ? 'col-md-10 form-group has-error' : 'col-md-10 form-group'">
+	                                    <label>Return:</label>
+	                                    <input type="text" class="form-control" maxlength="6" th:field="*{riskFreeReturn}" th:errorclass="has-error"/>
+	                                    <span class="help-block" th:if="${#fields.hasErrors('riskFreeReturn')}">
+	                                        <ul>
+	                                            <li th:each="err : ${#fields.errors('riskFreeReturn')}" th:text="${err}"/>
+	                                        </ul>
+	                                    </span>
+	                                </div>
+	                            </div>
+	                            <div class="row">
+	                                <div class="col-md-10 form-group" th:class="${#fields.hasErrors('avgBidAskLastSize')} ? 'col-md-10 form-group has-error' : 'col-md-10 form-group'">
+	                                    <label>Avg Bid/Ask/Last Size:</label>
+	                                    <input type="text" class="form-control" maxlength="10" th:field="*{avgBidAskLastSize}" th:errorclass="has-error"/>
+	                                    <span class="help-block" th:if="${#fields.hasErrors('avgBidAskLastSize')}">
+	                                        <ul>
+	                                            <li th:each="err : ${#fields.errors('avgBidAskLastSize')}" th:text="${err}"/>
+	                                        </ul>
+	                                    </span>
+	                                </div>
+	                            </div>
+	                            <div class="row">
+	                                <div class="col-md-10 form-group" th:class="${#fields.hasErrors('sizeVolatility')} ? 'col-md-10 form-group has-error' : 'col-md-10 form-group'">
+	                                    <label>Size Volatility:</label>
+	                                    <input type="text" class="form-control" maxlength="4" th:field="*{sizeVolatility}" th:errorclass="has-error"/>
+	                                    <span class="help-block" th:if="${#fields.hasErrors('sizeVolatility')}">
+	                                        <ul>
+	                                            <li th:each="err : ${#fields.errors('sizeVolatility')}" th:text="${err}"/>
+	                                        </ul>
+	                                    </span>
+	                                </div>
+	                            </div>
+	                            <div class="row">
+	                                <div class="col-md-10 form-group" th:class="${#fields.hasErrors('avgTimeStepMilliSecs')} ? 'col-md-10 form-group has-error' : 'col-md-10 form-group'">
+	                                    <label>Avg Time Step Millisecs:</label>
+	                                    <input type="text" class="form-control" maxlength="6" th:field="*{avgTimeStepMilliSecs}" th:errorclass="has-error"/>
+	                                    <span class="help-block" th:if="${#fields.hasErrors('avgTimeStepMilliSecs')}">
+	                                        <ul>
+	                                            <li th:each="err : ${#fields.errors('avgTimeStepMilliSecs')}" th:text="${err}"/>
+	                                        </ul>
+	                                    </span>
+	                                </div>
+	                            </div>
+	                            <div class="row">
+	                                <div class="col-md-10 form-group" th:class="${#fields.hasErrors('timeStepVolatility')} ? 'col-md-10 form-group has-error' : 'col-md-10 form-group'">
+	                                    <label>Time Step Volatility:</label>
+	                                    <input type="text" class="form-control" maxlength="4" th:field="*{timeStepVolatility}" th:errorclass="has-error"/>
+	                                    <span class="help-block" th:if="${#fields.hasErrors('timeStepVolatility')}">
+	                                        <ul>
+	                                            <li th:each="err : ${#fields.errors('timeStepVolatility')}" th:text="${err}"/>
+	                                        </ul>
+	                                    </span>
+	                                </div>
+	                            </div>
+	                            <div class="row">
+	                                <div class="col-md-10 form-group" th:class="${#fields.hasErrors('spreadVolatility')} ? 'col-md-10 form-group has-error' : 'col-md-10 form-group'">
+	                                    <label>Spread Volatility:</label>
+	                                    <input type="text" class="form-control" maxlength="4" th:field="*{spreadVolatility}" th:errorclass="has-error"/>
+	                                    <span class="help-block" th:if="${#fields.hasErrors('spreadVolatility')}">
+	                                        <ul>
+	                                            <li th:each="err : ${#fields.errors('spreadVolatility')}" th:text="${err}"/>
+	                                        </ul>
+	                                    </span>
+	                                </div>
+	                            </div>
+	                            <div class="row">
+	                                <div class="col-md-10 form-group" th:class="${#fields.hasErrors('maxSeriesTimeMilliSecs')} ? 'col-md-10 form-group has-error' : 'col-md-10 form-group'">
+	                                    <label>Max Time Series Millisecs:</label>
+	                                    <input type="text" class="form-control" maxlength="12" th:field="*{maxSeriesTimeMilliSecs}" th:errorclass="has-error"/>
+	                                    <span class="help-block" th:if="${#fields.hasErrors('maxSeriesTimeMilliSecs')}">
+	                                        <ul>
+	                                            <li th:each="err : ${#fields.errors('maxSeriesTimeMilliSecs')}" th:text="${err}"/>
+	                                        </ul>
+	                                    </span>
+	                                </div>
+	                            </div>
+	                            <div class="row">
+		                            <div class="col-md-10 form-group" >
+		                                <button type="submit" class="btn btn-primary">Save</button>&nbsp;
+		                                <a th:if="${not #strings.isEmpty(config.id)}" href="#" th:href="${'/configuration/' + config.id + '/delete'}" class="btn btn-primary" role="button">Delete</a>&nbsp;
+		                                <a href="/configuration/list" class="btn btn-primary" role="button">Close</a>
+		                            </div>
+	                            </div>
+	                            
+				            </div>
+			            </div>
+		            </form>
+		        </div>
+		    </div>
+		</div>
+		
+			
+	
+	</body>
+</html>

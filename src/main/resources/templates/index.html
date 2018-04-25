@@ -35,33 +35,39 @@
 	
 		<div class="container-fluid" style="margin-top: 20px">
 		    <div class="row">
-		        <div class="col-md-6 col-md-offset-3">
+		        <div class="col-md-8 col-md-offset-2">
 		            <div class="panel panel-primary">
 		
 		                <div class="panel-heading">
 		                    <div class="row">
-                               <div class="col-md-10 ">
+                               <div class="col-md-7">
                                    <h1 class="panel-title">Simulation Configuration List</h1>
                                </div>
-                           </div>
+                            </div>
 		                </div>
 		                <div class="panel-body">
+		                	<div th:if="${msg!=null}" class="alert alert-info">
+			                    <p th:text="${msg}">Info Message</p>
+			                </div>
 			                <div class="table-responsive" th:if="${#lists.isEmpty(configs)}">
 			                	There are no configs in the database! 
 			                	Please <a href="/config/new">create</a> one.
 			                </div>
 		                    <div class="table-responsive" th:if="${not #lists.isEmpty(configs)}">
+		                    	<div>
+				                    <a href="/configuration/create" class="btn btn-primary" role="button">+ Create</a>
+				                </div>
 		                        <table class="table table-hover ">
 		                            <thead class="thead-inverse">
 			                            <tr>
-			                                <th text-align:left;">ID</th>
-			                                <th text-align:left;">Name</th>
-			                                <th text-align:center;">Initial Price</th>
-			                                <th text-align:center;">Tick Size</th>
-			                                <th text-align:center;">Volatility</th>
-			                                <th text-align:center;">Max Duration</th>
-			                                <th text-align:center;">&nbsp;</th>
-			                                <th text-align:center;">&nbsp;</th>
+			                                <th style="text-align:left;">ID</th>
+			                                <th style="text-align:left;">Name</th>
+			                                <th style="text-align:center;">Initial Price</th>
+			                                <th style="text-align:center;">Tick Size</th>
+			                                <th style="text-align:center;">Volatility</th>
+			                                <th style="text-align:center;">Max Duration</th>
+			                                <th style="text-align:center;">&nbsp;</th>
+			                                <th style="text-align:center;">&nbsp;</th>
 			                            </tr>
 		                            </thead>
 		                            <tr th:remove="all">

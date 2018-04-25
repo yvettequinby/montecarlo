@@ -19,13 +19,12 @@ import com.javafreelance.montecarlo.dto.SimulatedMarketDataDTO;
 import com.javafreelance.montecarlo.model.SimulationConfigurationModel;
 import com.javafreelance.montecarlo.service.MonteCarloService;
 
-
 @Slf4j
 @Controller
 public class SimulationController {
-	
+
 	private final MonteCarloService monteCarloService;
-	
+
 	public SimulationController(MonteCarloService monteCarloService) {
 		this.monteCarloService = monteCarloService;
 	}
@@ -38,17 +37,13 @@ public class SimulationController {
 		model.addAttribute("config", config);
 		return "simulation";
 	}
-	
+
 	@GetMapping(path = "/simulation/{configurationId}/stream", produces = TEXT_EVENT_STREAM_VALUE)
 	@ResponseBody
 	public Flux<SimulatedMarketDataDTO> simulationStream(@PathVariable String configurationId) {
-		
 		WebClient client = WebClient.create("http://localhost:8080");
-		Flux<SimulatedMarketDataDTO> flux = client.get()
-	    		.uri("/publishing/sim/" + configurationId)
-				.accept(APPLICATION_STREAM_JSON)
-				.retrieve()
-	            .bodyToFlux(SimulatedMarketDataDTO.class);
-	    return flux;
+		Flux<SimulatedMarketDataDTO> flux = client.get().uri("/publishing/sim/" + configurationId).accept(APPLICATION_STREAM_JSON).retrieve()
+				.bodyToFlux(SimulatedMarketDataDTO.class);
+		return flux;
 	}
 }

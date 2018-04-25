@@ -13,4 +13,8 @@ public interface MonteCarloService {
 	Flux<SimulationConfigurationModel> listSimulationConfigurations();
 
 	Mono<SimulationConfigurationModel> getSimulationConfiguration(String id);
+
+	Mono<SimulationConfigurationModel> saveSimulationConfiguration(SimulationConfigurationModel model);
+
+	Mono<Void> deleteSimulationConfiguration(String id);
 }
