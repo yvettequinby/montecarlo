@@ -19,6 +19,9 @@ public class SimulatedMarketDataDTO {
 	private final Long bidSize;
 	private final Long askSize;
 	private final Long lastSize;
+	private final Long bidTimeMilliSecs;
+	private final Long askTimeMilliSecs;
+	private final Long lastTimeMilliSecs;
 	private final String bidString;
 	private final String askString;
 	private final String lastString;
@@ -34,6 +37,9 @@ public class SimulatedMarketDataDTO {
 			@JsonProperty("bidSize")Long bidSize, 
 			@JsonProperty("askSize")Long askSize, 
 			@JsonProperty("lastSize")Long lastSize, 
+			@JsonProperty("bidTimeMilliSecs")Long bidTimeMilliSecs, 
+			@JsonProperty("askTimeMilliSecs")Long askTimeMilliSecs, 
+			@JsonProperty("lastTimeMilliSecs")Long lastTimeMilliSecs, 
 			@JsonProperty("bidString")String bidString, 
 			@JsonProperty("askString")String askString, 
 			@JsonProperty("lastString")String lastString, 
@@ -48,6 +54,9 @@ public class SimulatedMarketDataDTO {
 		this.bidSize = bidSize;
 		this.askSize = askSize;
 		this.lastSize = lastSize;
+		this.bidTimeMilliSecs = bidTimeMilliSecs;
+		this.askTimeMilliSecs = askTimeMilliSecs;
+		this.lastTimeMilliSecs = lastTimeMilliSecs;
 		this.bidString = bidString;
 		this.askString = askString;
 		this.lastString = lastString;

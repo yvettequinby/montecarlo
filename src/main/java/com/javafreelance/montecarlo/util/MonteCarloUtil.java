@@ -32,36 +32,80 @@ public class MonteCarloUtil {
 		}
 		return result;
 	}
+	
+	public boolean isChanceEvent() {
+		return makeRandom().nextDouble()<=0.5d;
+	}
 
 	public SimulatedMarketDataDTO spinWheel(SimulationConfigurationDTO c, SimulatedMarketDataDTO p, DecimalFormat df) {
 		// Prepare a standard normal distribution
 		NormalDistribution nd = new NormalDistribution(0d, 1d);
+		
+		Double bid = p.getBid();
+		Double ask = p.getAsk();
+		Double last = p.getLast();
+		Long bidSize = p.getBidSize();
+		Long askSize = p.getAskSize();
+		Long lastSize = p.getLastSize();
+		Long bidTimeMilliSecs = p.getBidTimeMilliSecs();
+		Long askTimeMilliSecs = p.getAskTimeMilliSecs();
+		Long lastTimeMilliSecs = p.getLastTimeMilliSecs();
+		
 		// Calc a simulated time step
-		Long simTimeStep = Math.round(wienerProcess(nd, 0d, c.getTimeStepVolatility(), 1d, c.getAvgTimeStepMilliSecs()));
+		Long timeStepMilliSecs = Math.round(wienerProcess(nd, 0d, c.getTimeStepVolatility(), 1d, c.getAvgTimeStepMilliSecs()));
+		
 		// Calc the current time in the series and the time step in years
-		Long time = p.getTimeMilliSecs() + simTimeStep;
-		Double timeStepInYears = simTimeStep * MILLISECS_TO_YEARS;
+		Long timeMilliSecs = p.getTimeMilliSecs() + timeStepMilliSecs;
+		Double timeStepInYears = timeStepMilliSecs * MILLISECS_TO_YEARS;
+		
 		// Calc the simulated price
-		Double simPrice = wienerProcess(nd, c.getRiskFreeReturn(), c.getVolatility(), timeStepInYears, p.getSimulatedPrice());
+		Double simulatedPrice = wienerProcess(nd, c.getRiskFreeReturn(), c.getVolatility(), timeStepInYears, p.getSimulatedPrice());
+		
+		// Process to determine event type. Possible it can be all three. Must always be at least one.
+		double eventRandom = makeRandom().nextDouble();
+		boolean bidEvent = isChanceEvent();
+		boolean askEvent = isChanceEvent();
+		boolean lastEvent = isChanceEvent();
+		if(!bidEvent && !askEvent && !lastEvent) {
+			bidEvent = eventRandom<=0.33d;
+			askEvent = eventRandom>0.33d && eventRandom<=0.66d;
+			lastEvent = eventRandom>0.66d;
+		}
+		
 		// Prepare a random to determine a choice
-		Integer lastRandom = makeRandom().nextInt(4);
+		Integer lastRandom = makeRandom().nextInt(2);
 		// Calc the simulated bid-ask spread
 		Double simSpread = wienerProcess(nd, 0d, c.getSpreadVolatility(), 1d, c.getTickSize());
-		// Sizes
-		Long simBidSize = Math.round(wienerProcess(nd, 0d, c.getSizeVolatility(), 1d, c.getAvgBidAskLastSize()));
-		Long simAskSize = Math.round(wienerProcess(nd, 0d, c.getSizeVolatility(), 1d, c.getAvgBidAskLastSize()));
-		Long simLastSize = lastRandom == 0 ? p.getBidSize() : lastRandom == 1 ? p.getAskSize() : lastRandom == 2 ? simBidSize : simAskSize;
-		// Down to business - bid, ask and last
-		Double bid = round(simPrice - simSpread, c.getTickSize(), c.getTickScale());
-		Double ask = round(Math.max(bid + c.getTickSize(), round(simPrice, c.getTickSize(), c.getTickScale())), c.getTickSize(), c.getTickScale());
-		Double last = lastRandom == 0 ? p.getBid() : lastRandom == 1 ? p.getAsk() : lastRandom == 2 ? bid : ask;
+		
+		if(bidEvent) {
+			bidSize = Math.round(wienerProcess(nd, 0d, c.getSizeVolatility(), 1d, c.getAvgBidAskLastSize()));
+			bidTimeMilliSecs = timeMilliSecs;
+			if(askEvent) { // only move the bid price if there is also an ask event. keep things simple...
+				bid = round(simulatedPrice - simSpread, c.getTickSize(), c.getTickScale());
+			}
+		} 
+		
+		if(askEvent) {
+			askSize = Math.round(wienerProcess(nd, 0d, c.getSizeVolatility(), 1d, c.getAvgBidAskLastSize()));
+			askTimeMilliSecs = timeMilliSecs;
+			if(bidEvent) { // only move the ask price if there is also an bid event. keep things simple...
+				ask = round(Math.max(bid + c.getTickSize(), round(simulatedPrice, c.getTickSize(), c.getTickScale())), c.getTickSize(), c.getTickScale());
+			} 
+		}
+		
+		if(lastEvent) {
+			lastSize = lastRandom == 0 ? p.getBidSize() : p.getAskSize();
+			lastTimeMilliSecs = timeMilliSecs;
+			last = lastRandom == 0 ? p.getBid() : p.getAsk();
+		}
+				
 		boolean lastInSeries = false;
-		if (time >= c.getMaxSeriesTimeMilliSecs()) {
+		if (timeMilliSecs >= c.getMaxSeriesTimeMilliSecs()) {
 			lastInSeries = true;
 		}
 		// Put it all together
-		SimulatedMarketDataDTO smd = new SimulatedMarketDataDTO(simTimeStep, time, simPrice, bid, ask, last, simBidSize, simAskSize, simLastSize,
-				df.format(bid), df.format(ask), df.format(last), lastInSeries);
+		SimulatedMarketDataDTO smd = new SimulatedMarketDataDTO(timeStepMilliSecs, timeMilliSecs, simulatedPrice, bid, ask, last, bidSize, askSize, lastSize,
+				bidTimeMilliSecs, askTimeMilliSecs, lastTimeMilliSecs, df.format(bid), df.format(ask), df.format(last), lastInSeries);
 		return smd;
 	}
 	

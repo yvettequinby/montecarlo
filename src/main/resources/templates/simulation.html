@@ -49,24 +49,28 @@
 		                        <table class="table table-hover ">
 		                            <thead class="thead-inverse">
 			                            <tr>
-			                                <th style="text-align:center;">Time</th>
+			                                <th style="text-align:center;">Bid Time</th>
 			                                <th style="text-align:center;">Bid Qty</th>
 			                                <th style="text-align:center;">Bid</th>
 			                                <th style="text-align:center;">Ask</th>
 			                                <th style="text-align:center;">Ask Qty</th>
+			                                <th style="text-align:center;">Ask Time</th>
 			                                <th style="text-align:center;">Last</th>
 			                                <th style="text-align:center;">Last Qty</th>
+			                                <th style="text-align:center;">Last Time</th>
 			                                <th style="text-align:center;">Closed</th>
 			                            </tr>
 		                            </thead>
 		                            <tr>
-		                                <td style="text-align:center;" id="timeMilliSecs">x</td>
+		                                <td style="text-align:center;" id="bidTimeMilliSecs">x</td>
 		                                <td style="text-align:center;" id="bidSize">x</td>
 		                                <td style="text-align:center;" id="bid">x</td>
 		                                <td style="text-align:center;" id="ask">x</td>
 		                                <td style="text-align:center;" id="askSize">x</td>
+		                                <td style="text-align:center;" id="askTimeMilliSecs">x</td>
 		                                <td style="text-align:center;" id="last">x</td>
 		                                <td style="text-align:center;" id="lastSize">x</td>
+		                                <td style="text-align:center;" id="lastTimeMilliSecs">x</td>
 		                                <td style="text-align:center;" id="endOfSeries">x</td>
 		                            </tr>
 		                        </table>
@@ -102,18 +106,75 @@
 		            data: []
 		        }]
 		    });
+			
+			var lastTimeMilliSecs = 0;
+			var bidSize = 0;
+			var bid = 0;
+			var askSize = 0;
+			var ask = 0;
+			var lastSize = 0;
+			var last = 0;
 		
 			var updateMarketData = function (marketData) {
+				var bidSizeCell = $("#bidSize");
+				var bidCell = $("#bid");
+				var askSizeCell = $("#askSize");
+				var askCell = $("#ask");
+				var lastSizeCell = $("#lastSize");
+				var lastCell = $("#last");
 		    	$("#timeMilliSecs").html(marketData.timeMilliSecs);
-		    	$("#bidSize").html(marketData.bidSize);
-		    	$("#bid").html(marketData.bidString);
-		    	$("#ask").html(marketData.askString);
-		    	$("#askSize").html(marketData.askSize);
-		    	$("#last").html(marketData.lastString);
-		    	$("#lastSize").html(marketData.lastSize);
+		    	bidSizeCell.html(marketData.bidSize);
+		    	bidCell.html(marketData.bidString);
+		    	askCell.html(marketData.askString);
+		    	askSizeCell.html(marketData.askSize);
+		    	lastCell.html(marketData.lastString);
+		    	lastSizeCell.html(marketData.lastSize);
+		    	$("#bidTimeMilliSecs").html(marketData.bidTimeMilliSecs);
+		    	$("#askTimeMilliSecs").html(marketData.askTimeMilliSecs);
+		    	$("#lastTimeMilliSecs").html(marketData.lastTimeMilliSecs);
 		    	$("#endOfSeries").html("" + marketData.endOfSeries);
-		    	var shift = chart.series[0].data.length > 40;
-		    	chart.series[0].addPoint([marketData.timeMilliSecs, marketData.last], true, shift);
+		    	
+		    	if (marketData.bidSize>bidSize) {
+		    		bidSizeCell.css('color','green');
+		    	} else if (marketData.bidSize<bidSize) {
+		    		bidSizeCell.css('color','red');
+		    	} 
+		    	if (marketData.bid>bid) {
+		    		bidCell.css('color','green');
+		    	} else if (marketData.bid<bid) {
+		    		bidCell.css('color','red');
+		    	}
+		    	if (marketData.askSize>askSize) {
+		    		askSizeCell.css('color','green');
+		    	} else if (marketData.askSize<askSize) {
+		    		askSizeCell.css('color','red');
+		    	} 
+		    	if (marketData.ask>ask) {
+		    		askCell.css('color','green');
+		    	} else if (marketData.ask<ask) {
+		    		askCell.css('color','red');
+		    	} 
+		    	if (marketData.lastSize>lastSize) {
+		    		lastSizeCell.css('color','green');
+		    	} else if (marketData.lastSize<lastSize) {
+		    		lastSizeCell.css('color','red');
+		    	} 
+		    	if (marketData.last>last) {
+		    		lastCell.css('color','green');
+		    	} else if (marketData.last<last) {
+		    		lastCell.css('color','red');
+		    	} 
+		    	bidSize = marketData.bidSize;
+				bid = marketData.bid;
+				askSize = marketData.askSize;
+				ask = marketData.ask;
+				lastSize = marketData.lastSize;
+				last = marketData.last;
+		    	if(marketData.lastTimeMilliSecs>lastTimeMilliSecs) {
+		    		var shift = chart.series[0].data.length > 40;
+			    	chart.series[0].addPoint([marketData.lastTimeMilliSecs, marketData.last], true, shift);
+			    	lastTimeMilliSecs = marketData.lastTimeMilliSecs;
+		    	}
 		    };
 		    
 		    var configId = "[[${config.id}]]";

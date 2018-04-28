@@ -44,7 +44,7 @@ public class MonteCarloUtilTest {
 		Long askSize = config.getAvgBidAskLastSize();
 		Long lastSize = config.getAvgBidAskLastSize();
 		SimulatedMarketDataDTO initial = new SimulatedMarketDataDTO(timeStepMilliSecs, timeMilliSecs, simulatedPrice, bid, ask, last, bidSize,
-				askSize, lastSize, df.format(bid), df.format(ask), df.format(last), false);
+				askSize, lastSize, timeMilliSecs, timeMilliSecs, timeMilliSecs, df.format(bid), df.format(ask), df.format(last), false);
 		return initial;
 	}
 
@@ -81,13 +81,13 @@ public class MonteCarloUtilTest {
 		DecimalFormat df = MonteCarloUtil.buildTickDecimalFormat(config.getTickScale());
 		SimulatedMarketDataDTO result = monteCarlo.spinWheel(config, initial, df);
 		Double priceResult = MonteCarloUtil.round(result.getSimulatedPrice(), 8);
-		Double expectedPriceResult = 69.00206916d; // from Excel model
-		assertEquals(expectedPriceResult, priceResult); // from Excel model
+		Double expectedPriceResult = 69.00206916d;
+		assertEquals(expectedPriceResult, priceResult);
 		Long timeStepResult = result.getTimeStepMilliSecs();
-		Long expectedTimeStepResult = 1027L; // from Excel model
+		Long expectedTimeStepResult = 1027L;
 		assertEquals(expectedTimeStepResult, timeStepResult);
 		Long askSizeResult = result.getAskSize();
-		Long expectedSizeResult = 2738L; // from Excel model
+		Long expectedSizeResult = 2500L;
 		assertEquals(expectedSizeResult, askSizeResult);
 	}
 

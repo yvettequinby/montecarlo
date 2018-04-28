@@ -113,7 +113,7 @@ public class MonteCarloServiceImpl implements MonteCarloService {
 			Long lastSize = config.getAvgBidAskLastSize();
 			DecimalFormat df = MonteCarloUtil.buildTickDecimalFormat(config.getTickScale());
 			SimulatedMarketDataDTO initial = new SimulatedMarketDataDTO(timeStepMilliSecs, timeMilliSecs, simulatedPrice, bid, ask, last, bidSize,
-					askSize, lastSize, df.format(bid), df.format(ask), df.format(last), false);
+					askSize, lastSize, timeMilliSecs, timeMilliSecs, timeMilliSecs, df.format(bid), df.format(ask), df.format(last), false);
 			return initial;
 		});
 	}
