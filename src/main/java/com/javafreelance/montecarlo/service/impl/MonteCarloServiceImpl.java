@@ -73,30 +73,34 @@ public class MonteCarloServiceImpl implements MonteCarloService {
 		return flux;
 	}
 
-	private void executeMonteGoGo(ExecutorService producerExecutor, final FluxSink<SimulatedMarketDataDTO> emitter,
+	private void executeMonteGoGo(final ExecutorService producerExecutor, final FluxSink<SimulatedMarketDataDTO> emitter,
 			final Mono<SimulationConfigurationDTO> config, final Mono<SimulatedMarketDataDTO> initial, final MonteCarloUtil mcu) {
-		producerExecutor.execute(monteGoGo(emitter, config, initial, mcu));
+		producerExecutor.execute(monteGoGo(producerExecutor, emitter, config, initial, mcu));
 	}
 
-	public Runnable monteGoGo(final FluxSink<SimulatedMarketDataDTO> emitter, final Mono<SimulationConfigurationDTO> config,
+	public Runnable monteGoGo(final ExecutorService producerExecutor, final FluxSink<SimulatedMarketDataDTO> emitter, final Mono<SimulationConfigurationDTO> config,
 			final Mono<SimulatedMarketDataDTO> initial, final MonteCarloUtil mcu) {
 		return () -> {
-			SimulatedMarketDataDTO p = initial.block();
-			SimulationConfigurationDTO c = config.block();
-			DecimalFormat df = MonteCarloUtil.buildTickDecimalFormat(c.getTickScale());
-			log.debug("Monte Carlo Start!");
-			while (p != null && !p.isEndOfSeries()) {
-				p = mcu.spinWheel(c, p, df);
-				try {
-					Thread.sleep(p.getTimeStepMilliSecs());
-				} catch (InterruptedException e) {
-					log.error("Monte Carlo Sleep Interrupted!", e);
-					emitter.error(e);
+			try {
+				SimulatedMarketDataDTO p = initial.block();
+				SimulationConfigurationDTO c = config.block();
+				DecimalFormat df = MonteCarloUtil.buildTickDecimalFormat(c.getTickScale());
+				log.debug("Monte Carlo Start!");
+				while (p != null && !p.isEndOfSeries()) {
+					p = mcu.spinWheel(c, p, df);
+					try {
+						Thread.sleep(p.getTimeStepMilliSecs());
+					} catch (InterruptedException e) {
+						log.error("Monte Carlo Sleep Interrupted!", e);
+						emitter.error(e);
+					}
+					emitter.next(p);
 				}
-				emitter.next(p);
+				emitter.complete();
+				log.debug("Monte Carlo Complete!");
+			} finally {
+				producerExecutor.shutdown();
 			}
-			emitter.complete();
-			log.debug("Monte Carlo Complete!");
 		};
 	}
 
