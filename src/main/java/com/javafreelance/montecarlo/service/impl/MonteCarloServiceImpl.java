@@ -66,7 +66,7 @@ public class MonteCarloServiceImpl implements MonteCarloService {
 		return retrieveMonteCarloPublisher(config, initial);
 	}
 
-	private Flux<SimulatedMarketDataDTO> retrieveMonteCarloPublisher(Mono<SimulationConfigurationDTO> config, Mono<SimulatedMarketDataDTO> initial) {
+	Flux<SimulatedMarketDataDTO> retrieveMonteCarloPublisher(Mono<SimulationConfigurationDTO> config, Mono<SimulatedMarketDataDTO> initial) {
 		final MonteCarloUtil mcu = new MonteCarloUtil(null);
 		final ExecutorService producerExecutor = Executors.newSingleThreadExecutor();
 		Flux<SimulatedMarketDataDTO> flux = Flux.create(fluxSink -> executeMonteGoGo(producerExecutor, fluxSink, config, initial, mcu));
@@ -85,6 +85,7 @@ public class MonteCarloServiceImpl implements MonteCarloService {
 				SimulatedMarketDataDTO p = initial.block();
 				SimulationConfigurationDTO c = config.block();
 				DecimalFormat df = MonteCarloUtil.buildTickDecimalFormat(c.getTickScale());
+				emitter.next(p);
 				log.debug("Monte Carlo Start!");
 				while (p != null && !p.isEndOfSeries()) {
 					p = mcu.spinWheel(c, p, df);
